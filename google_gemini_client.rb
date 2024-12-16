@@ -9,7 +9,8 @@ require 'securerandom'
 require 'fileutils'
 
 def read_files_from_glob(glob)
-  files = Dir.glob(glob)
+  # Exclude .git directory
+  files = Dir.glob(glob).reject { |file| file =~ %r{/.git/} }
   files.map { |file| File.read(file) if File.file?(file) }.compact.join("\n---\n")
 end
 

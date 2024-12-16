@@ -1,0 +1,4 @@
+# https://aistudio.google.com/apikey
+api_url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent
+api_key: your_api_key
+log_file: path_to_a.log
