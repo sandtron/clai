@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 require 'fileutils'
-require_relative 'google_gemini_client'
+require_relative 'lib/google_gemini_client'
 
-class DocumentWriter
+class DocumentGenerator
   def initialize(client, output_file)
     @client = client
     @output_file = output_file
@@ -69,11 +69,10 @@ end
 
 # Example usage
 if __FILE__ == $0
+  
   output_file = ARGV[0]
-  context_glob = ARGV[1]
-  config_file = ARGV[2] || 'config.yml'
-
-  client = GoogleGeminiClient.new(config_file, context_glob)
-  writer = DocumentWriter.new(client, output_file)
+  context_files = ARGV[1..-1]
+  client = GoogleGeminiClient.new(context_files)
+  writer = DocumentGenerator.new(client, output_file)
   writer.iterate
 end

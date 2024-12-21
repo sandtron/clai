@@ -8,21 +8,27 @@ require 'yaml'
 require 'securerandom'
 require 'fileutils'
 
-def read_files_from_glob(glob)
-  # Exclude .git directory
-  files = Dir.glob(glob).reject { |file| file =~ %r{/.git/} }
-  files.map { |file| File.read(file) if File.file?(file) }.compact.join("\n---\n")
+def read_files_from_list(files)
+  # puts("#{files.class} - #{files}")
+  f = files.flat_map do |file| 
+     if File.file?(file) 
+      [file, File.read(file)]
+     else
+      read_files_from_list(Dir.glob(File.join(file,'*')))
+     end
+  end
+ f
 end
 
 class GoogleGeminiClient
 
-  def initialize(config_file = 'config.yml', context_files_glob = nil)
-    config = YAML.load_file(config_file)
+  def initialize(context_files = [])
+    config = YAML.load_file('config.yml')
 
     @api_key = config['api_key']
     log_file = config['log_file'] || 'gemini_client.log'
     @api_url = config['api_url']
-    @context_files_glob = context_files_glob
+    @context_files = context_files
 
     @memory = []
     @logger = Logger.new(log_file)
@@ -33,7 +39,7 @@ class GoogleGeminiClient
   end
 
   def generate_content(prompt)
-    file_context = read_files_from_glob(@context_files_glob) if @context_files_glob && !@context_included
+    file_context = read_files_from_list(@context_files) if @context_files && !@context_included
     @context_included = true if file_context # Mark context as included after the first message
 
     full_context = compile_context(prompt, file_context)
@@ -62,7 +68,6 @@ class GoogleGeminiClient
 
     http = Net::HTTP.new(url.host, url.port)
     http.use_ssl = true
-
     request = Net::HTTP::Post.new(url)
     request['Content-Type'] = 'application/json'
     request.body = payload.to_json
@@ -129,10 +134,10 @@ end
 
 # Example usage
 if __FILE__ == $0
-  context_files_glob = ARGV[0] 
-  config_file = ARGV[1] || 'config.yml'
+  context_files = ARGV[0..-1] # Read all arguments as context files
+  config_file = 'config.yml'
 
-  client = GoogleGeminiClient.new(config_file, context_files_glob)
+  client = GoogleGeminiClient.new(context_files)
 
   loop do
     print "> "
