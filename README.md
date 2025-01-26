@@ -1,6 +1,6 @@
 # clai-doc: Command-Line AI Document Generator
 
-This tool helps you iteratively generate documents using the Google Gemini API.
+This CLI tool helps you iteratively generate documents using the Google Gemini API.
 
 ## Getting Started
 
