@@ -7,6 +7,7 @@ require 'time'
 require 'yaml'
 require 'securerandom'
 require 'fileutils'
+require 'pathname'
 
 def read_files_from_list(files)
   # puts("#{files.class} - #{files}")
@@ -23,7 +24,8 @@ end
 class GoogleGeminiClient
 
   def initialize(context_files = [])
-    config = YAML.load_file('config.yml')
+    config_file = File.join(File.dirname(__FILE__), '../config.yml') # Use relative path for config file
+    config = YAML.load_file(config_file) rescue { 'api_key' => 'YOUR_API_KEY', 'api_url' => 'YOUR_API_URL', 'log_file' => 'gemini_client.log'} # Load config, provide defaults if fails
 
     @api_key = config['api_key']
     log_file = config['log_file'] || 'gemini_client.log'
@@ -135,7 +137,7 @@ end
 # Example usage
 if __FILE__ == $0
   context_files = ARGV[0..-1] # Read all arguments as context files
-  config_file = 'config.yml'
+  # config_file = 'config.yml' # Removed - config is now loaded relatively
 
   client = GoogleGeminiClient.new(context_files)
 
